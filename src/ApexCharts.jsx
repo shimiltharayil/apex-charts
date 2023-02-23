@@ -1,14 +1,27 @@
-import { React, useState } from "react";
+import { React, useEffect, useState } from "react";
 import Chart from "react-apexcharts";
+import { auth, db } from "./firebase";
+import { useCollection } from "react-firebase-hooks/firestore";
+import "./Chart.css"
 
 const ApexChart = () => {
-  const [chartConfig] = useState({
-    series: [
+  //   const [dataPoints, setDataPoints] = useState([]);
+  const query = db.collection('data');
+  const [snapshot, loading, error] = useCollection(query);
+  const [series, setSeries] = useState([]);
+  useEffect(() => {
+    setSeries([
       {
-        name: "Desktops",
-        data: [10, 41, 35, 51, 49, 62, 69, 91, 148],
-      },
-    ],
+        name: "Desktop",
+        data: snapshot?.docs.map((doc) => doc.data().value),
+      }],
+    );
+  }, [snapshot]);
+  console.log(series)
+
+  const [chartConfig] = useState({
+   
+
     options: {
       chart: {
         height: 350,
@@ -50,13 +63,18 @@ const ApexChart = () => {
   });
 
   return (
+    <div className="chart__container">
+
     <div id="chart">
-      <Chart
-        options={chartConfig.options}
-        series={chartConfig.series}
-        type="line"
-        height={350}
-      />
+    
+        <Chart
+          options={chartConfig.options}
+          series={series}
+          type="bubble"
+          height={350}
+          />
+      <button onClick={auth.signOut}>Sign Out</button>
+          </div>
     </div>
   );
 };
